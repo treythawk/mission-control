@@ -1,7 +1,10 @@
 def get_sol_oracle_pyth():
-    # This is your existing Pyth oracle logic
-    print("Fetching SOL price from Pyth...")
-    return 88.62 
+    # (Original RPC Logic)
+    pass
 
-# FIX: Map the expected name to the existing function
+# Alias for Titan V15 compatibility
 get_sol_market_price = get_sol_oracle_pyth
+
+
+def get_sol_market_price():
+    return get_sol_oracle_pyth()
