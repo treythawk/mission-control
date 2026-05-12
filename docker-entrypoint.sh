@@ -1,5 +1,12 @@
-#!/bin/sh
+#!/bin/bash
 set -e
+
+# 1. Start the OpenClaw Gateway in the background
+# Binding to 0.0.0.0 is critical so the dashboard can "see" it
+python3 -m openclaw.gateway --host 0.0.0.0 --port 18789 &
+
+# 2. Wait a moment for the gateway to initialize
+sleep 2
 
 # --- Source .env if present ---
 if [ -f /app/.env ]; then
