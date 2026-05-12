@@ -2,6 +2,9 @@ FROM node:22.22.0-slim AS base
 RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 WORKDIR /app
 
+# Install OpenClaw Gateway and dependencies
+RUN pip3 install openclaw loguru pyyaml
+
 FROM base AS deps
 # Copy only dependency manifests first for better layer caching
 COPY package.json ./
