@@ -2,9 +2,6 @@ FROM node:22.22.0-slim AS base
 RUN corepack enable && corepack prepare pnpm@9.15.9 --activate
 WORKDIR /app
 
-# Install OpenClaw Gateway and dependencies
-RUN pip3 install openclaw loguru pyyaml
-
 FROM base AS deps
 # Copy only dependency manifests first for better layer caching
 COPY package.json ./
@@ -62,7 +59,10 @@ WORKDIR /app
 ENV NODE_ENV=production
 # curl, CA certs, python3, git needed for agent runtime installers (OpenClaw, Hermes)
 # procps provides `ps` and `uptime` used by system-monitor APIs
-RUN apt-get update && apt-get install -y curl ca-certificates python3 git make g++ procps --no-install-recommends && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y \
+    curl ca-certificates python3 python3-pip git make g++ procps \
+    --no-install-recommends && rm -rf /var/lib/apt/lists/*
+RUN pip3 install openclaw loguru pyyaml --break-system-packages
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
