@@ -1,19 +1,14 @@
 #!/bin/bash
 set -e
 
-# 1. Start the OpenClaw Gateway in the background
-# Binding to 0.0.0.0 is critical so the dashboard can "see" it
+# 1. Start the OpenClaw Gateway (The Engine)
+# Binding to 0.0.0.0 allows the dashboard to connect via localhost
+printf "[entrypoint] Starting OpenClaw Gateway...\n"
 python3 -m openclaw.gateway --host 0.0.0.0 --port 18789 &
 
-# 2. Wait a moment for the gateway to initialize
-sleep 2
-
-# --- Source .env if present ---
+# 2. Source environment variables
 if [ -f /app/.env ]; then
-  printf '[entrypoint] Loading .env\n'
-  set -a
-  . /app/.env
-  set +a
+  set -a && . /app/.env && set +a
 fi
 
 # --- Helper: generate a random hex secret ---
