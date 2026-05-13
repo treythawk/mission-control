@@ -62,7 +62,8 @@ ENV NODE_ENV=production
 RUN apt-get update && apt-get install -y \
     curl ca-certificates python3 python3-pip git make g++ procps \
     --no-install-recommends && rm -rf /var/lib/apt/lists/*
-RUN pip3 install openclaw cmdop==0.1.18 tenacity httpx loguru pyyaml --break-system-packages
+RUN pip3 install tenacity httpx loguru pyyaml --break-system-packages
+RUN pip3 install openclaw cmdop --break-system-packages
 RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
