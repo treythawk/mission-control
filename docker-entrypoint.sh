@@ -1,14 +1,21 @@
 #!/bin/bash
 set -e
 
-# 1. Start the OpenClaw Gateway (The Engine)
-# Binding to 0.0.0.0 allows the dashboard to connect via localhost
-printf "[entrypoint] Starting OpenClaw Gateway...\n"
-python3 -m openclaw.gateway --host 0.0.0.0 --port 18789 &
+echo "[entrypoint] Starting OpenClaw Gateway on 0.0.0.0:18789..."
 
-# 2. Source environment variables
-if [ -f /app/.env ]; then
-  set -a && . /app/.env && set +a
+# Start the gateway and log errors to a file we can read
+python3 -m openclaw.gateway --host 0.0.0.0 --port 18789 > /app/gateway.log 2>&1 &
+
+# Give it 5 seconds to try and bind the port
+sleep 5
+
+# Check if it's still running
+if ps aux | grep -v grep | grep "openclaw.gateway" > /dev/null
+then
+    echo "✅ [entrypoint] WebSocket Gateway is RUNNING."
+else
+    echo "❌ [entrypoint] Gateway CRASHED. Check gateway.log."
+    cat /app/gateway.log
 fi
 
 # --- Helper: generate a random hex secret ---
