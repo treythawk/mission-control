@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# CLEAR STALE LOCKS (Prevents the crash loop you see in logs)
+rm -f /tmp/gateway.log
+rm -f ~/.openclaw/gateway.lock 2>/dev/null
+
 # 1. Start the OpenClaw Gateway in the background
 # We use a custom log path to avoid permission issues during E2E
 echo "[entrypoint] Initializing OpenClaw Gateway..."
