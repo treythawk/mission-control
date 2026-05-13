@@ -11,7 +11,7 @@ MAX_RETRIES=10
 COUNT=0
 while ! grep -q "WebSocket server running" /tmp/gateway.log && [ $COUNT -lt $MAX_RETRIES ]; do
   sleep 1
-  ((COUNT++))
+  COUNT=$((COUNT + 1))
 done
 
 if grep -q "WebSocket server running" /tmp/gateway.log; then
