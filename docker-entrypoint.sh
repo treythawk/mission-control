@@ -1,13 +1,8 @@
 #!/bin/bash
 set -e
 
-# CLEAR STALE LOCKS (Prevents the crash loop you see in logs)
-rm -f /tmp/gateway.log
-rm -f ~/.openclaw/gateway.lock 2>/dev/null
-
-# 1. Start the OpenClaw Gateway in the background
-# We use a custom log path to avoid permission issues during E2E
-echo "[entrypoint] Initializing OpenClaw Gateway..."
+# Clear locks and fire gateway
+rm -f /tmp/gateway.log ~/.openclaw/gateway.lock 2>/dev/null
 python3 -m openclaw.gateway --host 0.0.0.0 --port 18789 > /tmp/gateway.log 2>&1 &
 
 # 2. Dynamic Port Wait (Better than 'sleep 5')
