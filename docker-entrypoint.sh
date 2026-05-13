@@ -3,7 +3,7 @@ set -e
 
 # Clear locks and fire gateway
 rm -f /tmp/gateway.log ~/.openclaw/gateway.lock 2>/dev/null
-python3 -m openclaw.gateway --host 0.0.0.0 --port 18789 --debug > /tmp/gateway.log 2>&1 &
+python3 -m openclaw.gateway --host 0.0.0.0 --port 18789 > /tmp/gateway.log 2>&1 &
 
 # 2. Dynamic Port Wait (Better than 'sleep 5')
 # This satisfies Quality Gates by not wasting time if the port opens fast
