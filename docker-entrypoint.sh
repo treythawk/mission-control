@@ -1,40 +1,36 @@
 #!/bin/bash
 set -e
 
-# 1. Initialize Persistent Directories (The 'Hippocampus')
-mkdir -p /data/.hermes/memory
-mkdir -p /data/.hermes/skills
-mkdir -p /app/.data
-
-# 2. Link Secrets (Ensures your sk_live_973fc748... survives restarts)
+# --- 1. PERSISTENCE ---
+mkdir -p /data/.hermes/memory /data/.hermes/skills /app/.data
 if [ -f "/data/.hermes/.env" ]; then
     ln -sf /data/.hermes/.env /app/.env
-    echo "✅ [entrypoint] Secrets linked to persistent volume"
+    echo "✅ [entrypoint] Secrets linked from volume"
 fi
 
-# 3. Clean up crash locks
+# --- 2. CLEANUP ---
 rm -f /tmp/gateway.log ~/.openclaw/gateway.lock 2>/dev/null
+pkill -9 -f "hermes-hudui" || true
+pkill -9 -f "openclaw.gateway" || true
 
-# 4. Start HUD Keep-Alive Loop (Fixes the 502 Bad Gateway)
+# --- 3. CORE: GATEWAY (:3009) ---
+echo "⚡ [entrypoint] Launching Hermes Gateway on :3009..."
+python3 -m openclaw.gateway --host 0.0.0.0 --port 3009 --memory-path /data/.hermes/memory > /tmp/gateway.log 2>&1 &
+
+# --- 4. INTERFACE: HUD (:3008) ---
 if [ -d "/app/hermes-hudui" ]; then
-    echo "🚀 [entrypoint] Starting Hermes HUD on Port 3005..."
+    echo "🚀 [entrypoint] Launching Hermes HUD on :3008..."
     cd /app/hermes-hudui && source venv/bin/activate
-    nohup sh -c "while true; do hermes-hudui --host 0.0.0.0 --port 3005; sleep 5; done" > /data/hud_backend.log 2>&1 &
+    nohup sh -c "while true; do hermes-hudui --host 0.0.0.0 --port 3008; sleep 5; done" > /data/hud_persistent.log 2>&1 &
     cd /app
 fi
 
-# 5. Launch Gateway with Persistence Enabled
-echo "⚡ [entrypoint] Launching Hermes Gateway..."
-python3 -m openclaw.gateway --host 0.0.0.0 --port 18789 --memory-path /data/.hermes/memory > /tmp/gateway.log 2>&1 &
-
-# 6. Quality Gate: Wait for WebSocket stability
-MAX_RETRIES=15
-COUNT=0
+# --- 5. ORCHESTRATOR: MISSION CONTROL (:3000) ---
+echo "⏳ [entrypoint] Waiting for Gateway stability..."
+MAX_RETRIES=15; COUNT=0
 while ! grep -q "WebSocket server running" /tmp/gateway.log && [ $COUNT -lt $MAX_RETRIES ]; do
-    sleep 1
-    COUNT=$((COUNT + 1))
+    sleep 1; COUNT=$((COUNT + 1))
 done
 
-# 7. Start UI
-echo "✅ [entrypoint] Launching Mission Control UI..."
+echo "✅ [entrypoint] Launching Mission Control UI on :$PORT..."
 exec node server.js
