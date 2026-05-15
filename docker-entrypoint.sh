@@ -9,13 +9,17 @@ if [ -f "/data/.hermes/.env" ]; then
 fi
 
 # --- 2. CLEANUP ---
-rm -f /tmp/gateway.log ~/.openclaw/gateway.lock 2>/dev/null
+# Suppress errors with '|| true' so the script doesn't exit if files are missing
+rm -f /tmp/gateway.log ~/.openclaw/gateway.lock 2>/dev/null || true
 pkill -9 -f "hermes-hudui" || true
 pkill -9 -f "openclaw.gateway" || true
-# Clean up stale locks before starting
+
+# Clean up stale locks ONLY if the directory exists
 echo "🧹 Cleaning up stale gateway locks..."
-find /root/.hermes -name "*.pid" -delete
-rm -f /root/.hermes/.lock
+if [ -d "/root/.hermes" ]; then
+    find /root/.hermes -name "*.pid" -delete || true
+    rm -f /root/.hermes/.lock || true
+fi
 
 # --- 3. CORE: GATEWAY (:3009) ---
 echo "⚡ [entrypoint] Launching Hermes Gateway on :3009..."
