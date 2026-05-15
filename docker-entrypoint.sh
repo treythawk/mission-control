@@ -12,6 +12,10 @@ fi
 rm -f /tmp/gateway.log ~/.openclaw/gateway.lock 2>/dev/null
 pkill -9 -f "hermes-hudui" || true
 pkill -9 -f "openclaw.gateway" || true
+# Clean up stale locks before starting
+echo "🧹 Cleaning up stale gateway locks..."
+find /root/.hermes -name "*.pid" -delete
+rm -f /root/.hermes/.lock
 
 # --- 3. CORE: GATEWAY (:3009) ---
 echo "⚡ [entrypoint] Launching Hermes Gateway on :3009..."
